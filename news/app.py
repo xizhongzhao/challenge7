@@ -8,6 +8,7 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root@localhost/shiyanlou'
 db = SQLAlchemy(app)
 
+
 class File(db.Model):
     id = db.Column(db.Integer,primary_key=True,index=True)
     title = db.Column(db.String(80),unique=True)
@@ -35,14 +36,25 @@ class Category(db.Model):
     def __repr__(self):
         return '<Category %r>' %self.name 
 
+
 @app.route('/')
 def index():
-    pass
+    db.create_all()
+    file_instance_list = File.query.all()
+    title_id_list = [(file_instance.title,file_instance.id) for \
+            file_instance in file_instance_list ]
+    return render_template('index.html',title_id_list=title_id_list)
+
+
 
 
 @app.route('/files/<file_id>')
 def file(file_id):
-    pass
+    db.create_all()
+    file_instance = File.query.get(file_id)
+    file_category = Category.query.get(file_instance.category_id)
+    file_dict = { created_time:file_instance.created_time,category:file_category,content:file_instance.content }
+    return render_template('file.html',file_dict = file_dict)
 
 if __name__ == '__main__':
     app.run()
