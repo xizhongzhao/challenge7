@@ -51,10 +51,16 @@ def index():
 @app.route('/files/<file_id>')
 def file(file_id):
     db.create_all()
-    file_instance = File.query.get(file_id)
-    file_category = Category.query.get(file_instance.category_id)
-    file_dict = { created_time:file_instance.created_time,category:file_category,content:file_instance.content }
+    file_instance = File.query.filter_by(id=file_id).first_or_404()
+    _category_instance = Category.query.filter_by(id=file_instance.category_id).first_or_404()
+    file_category = _category_instance.name
+    file_dict = { 'created_time':datetime.strftime(file_instance.created_time,'%Y-%m-%d %H:%M:%S'),'category':file_category,'content':file_instance.content }
     return render_template('file.html',file_dict = file_dict)
+
+@app.errorhandler(404)
+def page_not_found(error):
+    return render_template('404.html'),404
+
 
 if __name__ == '__main__':
     app.run()
